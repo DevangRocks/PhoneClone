@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Phone Clone</string>
+
+    <string name="old_phone_n_send_data">Old Phone \10(Send Data)</string>
+    <string name="detect_receiver">Detect Receiver</string>
+    <string name="detect_sender">Detect Sender</string>
+    <string name="receiving_data_from_old_phone">Receiving data from old phone</string>
+    <string name="transfer">Transfer</string>
+    <string name="apps">Apps</string>
+    <string name="send_data">Send Data</string>
+    <string name="send_files">Send Files</string>
+    <string name="select_all">Select All</string>
+    <string name="videos">Videos</string>
+    <string name="images">Images</string>
+    <string name="audio">Audios</string>
+    <string name="file_transfer">File transfer</string>
+    <string name="share_selected_file">Share selected files</string>
+    <string name="share_all_data">Share all data</string>
+    <string name="history_desc">Discover received files</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+</resources>

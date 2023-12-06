@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="backgroundColor">#ffffffff</color>
+    <color name="colorBar">#5c70e0</color>
+    <color name="colorBarBtn">#2c1d5b</color>
+    <color name="colorReceive">#ae94fe</color>
+    <color name="colorSend">#3fdeff</color>
+    <color name="colorSendBtn">#2c1d5b</color>
+    <color name="textColor">#ffffffff</color>
+    <color name="buttonbackgroundColor">#2c1d5b</color>
+    <color name="textColor2">#ff000000</color>
+    <color name="colorSplash">#2c1d5b</color>
+    <color name="cardColor">#ededed</color>
+    <color name="app_color">#42c6ff</color>
+    <color name="orange">#ff902a</color>
+</resources>
