@@ -3,6 +3,9 @@ package com.example.phoneclone;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
+import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.os.Bundle;
 import android.view.View;
@@ -37,6 +40,11 @@ public class OldPhoneInfocus extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_old_phone_infocus);
+
+        //ViewModelClass viewModelClass =  new ViewModelClass(this.getApplication());
+
+        LifecycleOwner lifecycleOwner = this;
+      //  viewModelClass.getAllImages().observe(lifecycleOwner, new OldPhoneInfocus$onCreate$1(this));
 
         this.back = findViewById(R.id.back);
         back.setOnClickListener(new View.OnClickListener() {

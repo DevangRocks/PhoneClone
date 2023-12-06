@@ -21,6 +21,7 @@ import kotlin.jvm.internal.Intrinsics;
 
 public class PhoneCloneDataActivity extends AppCompatActivity {
     ActivityPhoneCloneDataBinding binding;
+    public static final int SHARE_REQUEST = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +68,12 @@ public class PhoneCloneDataActivity extends AppCompatActivity {
             }
         }
         if (phoneCloneDataActivity.checkIfPermissionsGranted()) {
-            phoneCloneDataActivity.startActivity(new Intent(phoneCloneDataActivity, ChooseConnectionActivity.class).putExtra("user", "receiver"));
+//            phoneCloneDataActivity.startActivity(new Intent(phoneCloneDataActivity, ReceiveDataInfocusActivity.class).putExtra("user", "receiver"));
+
+            Intent shareIntent = new Intent(phoneCloneDataActivity, ReceiveDataInfocusActivity.class);
+            shareIntent.setAction("android.intent.action.SEND_MULTIPLE");
+            //shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+            phoneCloneDataActivity.startActivityForResult(shareIntent, SHARE_REQUEST);
         }
     }
 
@@ -91,6 +97,7 @@ public class PhoneCloneDataActivity extends AppCompatActivity {
         }
         if (phoneCloneDataActivity.checkIfPermissionsGranted()) {
             Intent i = new Intent(phoneCloneDataActivity, LoadAllDataActivity.class);
+            i.putExtra("total", phoneCloneDataActivity.binding.tvTotalStorage.getText().toString());
             phoneCloneDataActivity.startActivity(i);
         }
     }

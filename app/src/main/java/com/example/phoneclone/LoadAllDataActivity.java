@@ -14,8 +14,6 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.CompoundButton;
-
-import com.example.phoneclone.CommonClass.ActivityLoadAllData$onCreate$1;
 import com.example.phoneclone.CommonClass.MConstants;
 import com.example.phoneclone.databinding.ActivityLoadAllDataBinding;
 import com.example.phoneclone.model.ContactModel;
@@ -25,18 +23,10 @@ import com.example.phoneclone.util.MUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
 import dmax.dialog.SpotsDialog;
-import kotlin.coroutines.Continuation;
-import kotlin.coroutines.CoroutineContext;
 import kotlin.jvm.internal.DefaultConstructorMarker;
 import kotlin.jvm.internal.Intrinsics;
 import kotlin.text.StringsKt;
-import kotlinx.coroutines.BuildersKt;
-import kotlinx.coroutines.CoroutineScopeKt;
-import kotlinx.coroutines.CoroutineStart;
-import kotlinx.coroutines.Dispatchers;
-import kotlinx.coroutines.Job;
 
 public class LoadAllDataActivity extends AppCompatActivity {
     private long allDataSize;
@@ -69,6 +59,7 @@ public class LoadAllDataActivity extends AppCompatActivity {
             inflate = null;
         }
         setContentView((View) inflate.getRoot());
+        binding.tvTotalSize.setText(getIntent().getStringExtra("total"));
 
         SharedPreferences sharedPreferences2 = getSharedPreferences(MConstants.prefName, 0);
         Intrinsics.checkNotNullExpressionValue(sharedPreferences2, "getSharedPreferences(prefName, MODE_PRIVATE)");

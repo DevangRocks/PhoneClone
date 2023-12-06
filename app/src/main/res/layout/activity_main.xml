@@ -91,7 +91,7 @@
             android:padding="@dimen/_8sdp"
             app:layout_constraintBottom_toTopOf="@+id/adView_container"
             app:layout_constraintEnd_toEndOf="@+id/layout_old_phone"
-        >
+            android:visibility="gone">
 
             <ImageView
                 android:id="@+id/imageView4"

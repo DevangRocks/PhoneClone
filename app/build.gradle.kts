@@ -50,6 +50,7 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.9.21"))
+    implementation ("androidx.activity:activity-ktx:1.1.0")
 
     implementation ("com.intuit.sdp:sdp-android:1.1.0")
     implementation ("com.intuit.ssp:ssp-android:1.1.0")
@@ -58,11 +59,13 @@ dependencies {
 
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.0")
 
+
     // LiveData
 
-    implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.3.0")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel:2.3.1")
+    implementation ("androidx.lifecycle:lifecycle-livedata:2.3.1")
+    implementation ("androidx.lifecycle:lifecycle-common-java8:2.3.1")
 
-    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.3.0")
 
     implementation ("androidx.core:core-ktx:1.3.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
