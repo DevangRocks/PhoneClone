@@ -430,4 +430,5 @@
         app:layout_constraintEnd_toEndOf="@+id/iv_total_size"
         app:layout_constraintStart_toStartOf="@+id/iv_total_size"
         app:layout_constraintTop_toTopOf="@+id/iv_total_size" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

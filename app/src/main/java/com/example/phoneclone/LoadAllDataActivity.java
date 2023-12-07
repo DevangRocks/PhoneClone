@@ -3,6 +3,7 @@ package com.example.phoneclone;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,19 +12,30 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.CompoundButton;
+
 import com.example.phoneclone.CommonClass.MConstants;
 import com.example.phoneclone.databinding.ActivityLoadAllDataBinding;
 import com.example.phoneclone.model.ContactModel;
 import com.example.phoneclone.model.FileModel;
+import com.example.phoneclone.transfer.TransferService;
 import com.example.phoneclone.util.MUtils;
+import com.example.phoneclone.util.Settings;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import dmax.dialog.SpotsDialog;
+import kotlin.ExceptionsKt;
+import kotlin.Unit;
 import kotlin.jvm.internal.DefaultConstructorMarker;
 import kotlin.jvm.internal.Intrinsics;
 import kotlin.text.StringsKt;
@@ -46,6 +58,8 @@ public class LoadAllDataActivity extends AppCompatActivity {
     public long mAppsSize;
     public ArrayList<ContactModel> mContactList = new ArrayList<>();
     private static final int SHARE_REQUEST = 1;
+    private final String[] projection = {"contact_id", "display_name", "data1"};
+    private Settings mSettings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,12 +79,18 @@ public class LoadAllDataActivity extends AppCompatActivity {
         Intrinsics.checkNotNullExpressionValue(sharedPreferences2, "getSharedPreferences(prefName, MODE_PRIVATE)");
         this.sharedPreferences = sharedPreferences2;
         //showDialog();
-        //Job unused = BuildersKt.launch(CoroutineScopeKt.CoroutineScope(Dispatchers.getIO()), (CoroutineContext) this, (CoroutineStart) null, new ActivityLoadAllData$onCreate$1(this, (Continuation<? super ActivityLoadAllData$onCreate$1>) null), 3, (Object) null);
+//        Job unused = BuildersKt.launch(CoroutineScopeKt.CoroutineScope(Dispatchers.getIO()), (CoroutineContext) null, (CoroutineStart) null, new ActivityLoadAllDataOnCreate(this, (Continuation<? super ActivityLoadAllDataOnCreate>) null), 3, (Object) null);
         binding.btnCancel.setOnClickListener(new View.OnClickListener() {
             public final void onClick(View view) {
                 finish();
             }
         });
+        loadApps();
+        loadFiles();
+        loadMusic();
+        loadVideos();
+        loadPictures();
+        getContactList();
 
         binding.btnShare.setOnClickListener(new View.OnClickListener() {
             public final void onClick(View view) {
@@ -78,9 +98,161 @@ public class LoadAllDataActivity extends AppCompatActivity {
                 shareIntent.setAction("android.intent.action.SEND_MULTIPLE");
                 //shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
                 LoadAllDataActivity.this.startActivityForResult(shareIntent, SHARE_REQUEST);
+
             }
         });
 
+        binding.layoutImages.setOnClickListener(view -> {
+           // loadPictures();
+        });
+
+        binding.layoutVideos.setOnClickListener(view -> {
+           // loadVideos();
+        });
+
+        binding.layoutMusic.setOnClickListener(view -> {
+           // loadMusic();
+        });
+
+        binding.layoutFiles.setOnClickListener(view -> {
+           // loadFiles();
+        });
+
+        binding.layoutApps.setOnClickListener(view -> {
+           // loadApps();
+        });
+        binding.layoutContacts.setOnClickListener(view -> {
+            //getContactList();
+        });
+
+        binding.checkboxApps.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public final void onCheckedChanged(CompoundButton compoundButton, boolean z) {
+                LoadAllDataActivity.setupCheckboxListeners$lambda$3(LoadAllDataActivity.this, compoundButton, z);
+            }
+        });
+
+        binding.checkboxFiles.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public final void onCheckedChanged(CompoundButton compoundButton, boolean z) {
+                LoadAllDataActivity.setupCheckboxListeners$lambda$4(LoadAllDataActivity.this, compoundButton, z);
+            }
+        });
+
+        binding.checkboxMusic.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public final void onCheckedChanged(CompoundButton compoundButton, boolean z) {
+                LoadAllDataActivity.setupCheckboxListeners$lambda$5(LoadAllDataActivity.this, compoundButton, z);
+            }
+        });
+
+        binding.checkboxImages.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public final void onCheckedChanged(CompoundButton compoundButton, boolean z) {
+                LoadAllDataActivity.setupCheckboxListeners$lambda$6(LoadAllDataActivity.this, compoundButton, z);
+            }
+        });
+
+        binding.checkboxVideos.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public final void onCheckedChanged(CompoundButton compoundButton, boolean z) {
+                LoadAllDataActivity.setupCheckboxListeners$lambda$7(LoadAllDataActivity.this, compoundButton, z);
+            }
+        });
+
+    }
+
+    public final void getContactList() {
+        Throwable th;
+        ContentResolver contentResolver = getContentResolver();
+        Cursor query = contentResolver != null ? contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, this.projection, (String) null, (String[]) null, "display_name ASC") : null;
+        if (query != null) {
+            try {
+                HashSet hashSet = new HashSet();
+                Closeable closeable = query;
+                try {
+                    Cursor cursor = (Cursor) closeable;
+                    int columnIndex = cursor.getColumnIndex("display_name");
+                    int columnIndex2 = cursor.getColumnIndex("data1");
+                    while (cursor.moveToNext()) {
+                        String string = cursor.getString(columnIndex);
+                        Intrinsics.checkNotNullExpressionValue(string, "cursor.getString(nameIndex)");
+                        String string2 = cursor.getString(columnIndex2);
+                        Intrinsics.checkNotNullExpressionValue(string2, "cursor.getString(numberIndex)");
+                        String replace$default = replace(string2, " ", "", false, 4, (Object) null);
+                        if (!hashSet.contains(replace$default)) {
+                             replace$default = replace(replace(replace(replace$default, " ", "", false, 4, (Object) null), "*", "", false, 4, (Object) null), "-", "", false, 4, (Object) null);
+                            File csvFile = getCsvFile(replace$default);
+                            if (csvFile == null) {
+                                csvFile = createCsvFile(replace$default);
+                            }
+                            this.mContactList.add(new ContactModel(string, replace$default, String.valueOf(csvFile != null ? csvFile.getAbsolutePath() : null)));
+                            hashSet.add(replace$default);
+                        }
+                    }
+                    updateUI();
+                    Unit unit = Unit.INSTANCE;
+                   closeFinally(closeable, (Throwable) null);
+                } catch (Throwable th2) {
+                    Throwable th3 = th2;
+                   closeFinally(closeable, th3);
+                    //throw th3;
+                }
+            } catch (Exception unused) {
+            }
+        }
+    }
+
+    public void closeFinally(Closeable closeable, Throwable th) {
+        if (closeable == null) {
+            return;
+        }
+        if (th == null) {
+            try {
+                closeable.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return;
+        }
+        try {
+            closeable.close();
+        } catch (Throwable th2) {
+            ExceptionsKt.addSuppressed(th, th2);
+        }
+    }
+
+    public   File getCsvFile(String str) {
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + File.separator + '.' + getString(R.string.app_name));
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        File file2 = new File(file, "Num_" + str + ".vcf");
+        if (file2.exists()) {
+            return file2;
+        }
+        return file2;
+    }
+
+    private  File createCsvFile(String str) {
+        try {
+            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + File.separator + '.' + getString(R.string.app_name));
+            if (!file.exists()) {
+                file.mkdirs();
+            }
+            File file2 = new File(file, "Num_" + str + ".vcf");
+            FileWriter fileWriter = new FileWriter(file2);
+            fileWriter.write("BEGIN:VCARD\r\n");
+            fileWriter.write("VERSION:1.0\r\n");
+            fileWriter.write(trimIndent("\n            FN:" + str + "\n            \n            "));
+            fileWriter.write(trimIndent("\n            TEL;TYPE=WORK,VOICE:" + str + "\n            \n            "));
+            fileWriter.write("END:VCARD\r\n");
+            fileWriter.close();
+            return file2;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public String trimIndent(String str) {
+        Intrinsics.checkNotNullParameter(str, "<this>");
+        return StringsKt.replaceIndent(str, "");
     }
 
     @Override
@@ -105,60 +277,60 @@ public class LoadAllDataActivity extends AppCompatActivity {
         spotsDialog2.show();
     }
 
-    public final void setupCheckboxListeners() {
-        ActivityLoadAllDataBinding activityLoadAllDataBinding = this.binding;
-        ActivityLoadAllDataBinding activityLoadAllDataBinding2 = null;
-        if (activityLoadAllDataBinding == null) {
-            Intrinsics.throwUninitializedPropertyAccessException("binding");
-            activityLoadAllDataBinding = null;
-        }
-        activityLoadAllDataBinding.checkboxApps.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public final void onCheckedChanged(CompoundButton compoundButton, boolean z) {
-                LoadAllDataActivity.setupCheckboxListeners$lambda$3(LoadAllDataActivity.this, compoundButton, z);
-            }
-        });
-        ActivityLoadAllDataBinding activityLoadAllDataBinding3 = this.binding;
-        if (activityLoadAllDataBinding3 == null) {
-            Intrinsics.throwUninitializedPropertyAccessException("binding");
-            activityLoadAllDataBinding3 = null;
-        }
-        activityLoadAllDataBinding3.checkboxFiles.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public final void onCheckedChanged(CompoundButton compoundButton, boolean z) {
-                LoadAllDataActivity.setupCheckboxListeners$lambda$4(LoadAllDataActivity.this, compoundButton, z);
-            }
-        });
-        ActivityLoadAllDataBinding activityLoadAllDataBinding4 = this.binding;
-        if (activityLoadAllDataBinding4 == null) {
-            Intrinsics.throwUninitializedPropertyAccessException("binding");
-            activityLoadAllDataBinding4 = null;
-        }
-        activityLoadAllDataBinding4.checkboxMusic.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public final void onCheckedChanged(CompoundButton compoundButton, boolean z) {
-                LoadAllDataActivity.setupCheckboxListeners$lambda$5(LoadAllDataActivity.this, compoundButton, z);
-            }
-        });
-        ActivityLoadAllDataBinding activityLoadAllDataBinding5 = this.binding;
-        if (activityLoadAllDataBinding5 == null) {
-            Intrinsics.throwUninitializedPropertyAccessException("binding");
-            activityLoadAllDataBinding5 = null;
-        }
-        activityLoadAllDataBinding5.checkboxImages.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public final void onCheckedChanged(CompoundButton compoundButton, boolean z) {
-                LoadAllDataActivity.setupCheckboxListeners$lambda$6(LoadAllDataActivity.this, compoundButton, z);
-            }
-        });
-        ActivityLoadAllDataBinding activityLoadAllDataBinding6 = this.binding;
-        if (activityLoadAllDataBinding6 == null) {
-            Intrinsics.throwUninitializedPropertyAccessException("binding");
-        } else {
-            activityLoadAllDataBinding2 = activityLoadAllDataBinding6;
-        }
-        activityLoadAllDataBinding2.checkboxVideos.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public final void onCheckedChanged(CompoundButton compoundButton, boolean z) {
-                LoadAllDataActivity.setupCheckboxListeners$lambda$7(LoadAllDataActivity.this, compoundButton, z);
-            }
-        });
-    }
+//    public final void setupCheckboxListeners() {
+//        ActivityLoadAllDataBinding activityLoadAllDataBinding = this.binding;
+//        ActivityLoadAllDataBinding activityLoadAllDataBinding2 = null;
+//        if (activityLoadAllDataBinding == null) {
+//            Intrinsics.throwUninitializedPropertyAccessException("binding");
+//            activityLoadAllDataBinding = null;
+//        }
+//        activityLoadAllDataBinding.checkboxApps.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            public final void onCheckedChanged(CompoundButton compoundButton, boolean z) {
+//                LoadAllDataActivity.setupCheckboxListeners$lambda$3(LoadAllDataActivity.this, compoundButton, z);
+//            }
+//        });
+//        ActivityLoadAllDataBinding activityLoadAllDataBinding3 = this.binding;
+//        if (activityLoadAllDataBinding3 == null) {
+//            Intrinsics.throwUninitializedPropertyAccessException("binding");
+//            activityLoadAllDataBinding3 = null;
+//        }
+//        activityLoadAllDataBinding3.checkboxFiles.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            public final void onCheckedChanged(CompoundButton compoundButton, boolean z) {
+//                LoadAllDataActivity.setupCheckboxListeners$lambda$4(LoadAllDataActivity.this, compoundButton, z);
+//            }
+//        });
+//        ActivityLoadAllDataBinding activityLoadAllDataBinding4 = this.binding;
+//        if (activityLoadAllDataBinding4 == null) {
+//            Intrinsics.throwUninitializedPropertyAccessException("binding");
+//            activityLoadAllDataBinding4 = null;
+//        }
+//        activityLoadAllDataBinding4.checkboxMusic.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            public final void onCheckedChanged(CompoundButton compoundButton, boolean z) {
+//                LoadAllDataActivity.setupCheckboxListeners$lambda$5(LoadAllDataActivity.this, compoundButton, z);
+//            }
+//        });
+//        ActivityLoadAllDataBinding activityLoadAllDataBinding5 = this.binding;
+//        if (activityLoadAllDataBinding5 == null) {
+//            Intrinsics.throwUninitializedPropertyAccessException("binding");
+//            activityLoadAllDataBinding5 = null;
+//        }
+//        activityLoadAllDataBinding5.checkboxImages.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            public final void onCheckedChanged(CompoundButton compoundButton, boolean z) {
+//                LoadAllDataActivity.setupCheckboxListeners$lambda$6(LoadAllDataActivity.this, compoundButton, z);
+//            }
+//        });
+//        ActivityLoadAllDataBinding activityLoadAllDataBinding6 = this.binding;
+//        if (activityLoadAllDataBinding6 == null) {
+//            Intrinsics.throwUninitializedPropertyAccessException("binding");
+//        } else {
+//            activityLoadAllDataBinding2 = activityLoadAllDataBinding6;
+//        }
+//        activityLoadAllDataBinding2.checkboxVideos.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            public final void onCheckedChanged(CompoundButton compoundButton, boolean z) {
+//                LoadAllDataActivity.setupCheckboxListeners$lambda$7(LoadAllDataActivity.this, compoundButton, z);
+//            }
+//        });
+//    }
 
     public static final void setupCheckboxListeners$lambda$7(LoadAllDataActivity activityLoadAllData, CompoundButton compoundButton, boolean z) {
         Intrinsics.checkNotNullParameter(activityLoadAllData, "this$0");
@@ -232,7 +404,15 @@ public class LoadAllDataActivity extends AppCompatActivity {
                 }
             }
             query.close();
+            updateUI();
         }
+    }
+
+    public static  String replace(String str, String str2, String str3, boolean z, int i, Object obj) {
+        if ((i & 4) != 0) {
+            z = false;
+        }
+        return StringsKt.replace(str, str2, str3, z);
     }
 
     public final void loadVideos() {
@@ -257,6 +437,7 @@ public class LoadAllDataActivity extends AppCompatActivity {
                 }
             }
             query.close();
+            updateUI();
         }
     }
 
@@ -282,6 +463,7 @@ public class LoadAllDataActivity extends AppCompatActivity {
                 }
             }
             query.close();
+            updateUI();
         }
     }
     public final void loadFiles() {
@@ -308,6 +490,7 @@ public class LoadAllDataActivity extends AppCompatActivity {
                 }
             }
             query.close();
+            updateUI();
         }
     }
 
@@ -334,12 +517,14 @@ public class LoadAllDataActivity extends AppCompatActivity {
                     String path = appFile.getPath();
                     Intrinsics.checkNotNullExpressionValue(path, "apkFile.path");
 
-                    //FileModel fileModel = r8;
+                    FileModel r8 = null;
+                    FileModel fileModel = r8;
                     FileModel fileModel2 = new FileModel(obj, path, "Apps", (ApplicationInfo) null, false, 24, (DefaultConstructorMarker) null);
-                    //arrayList.add(fileModel);
+                    arrayList.add(fileModel2);
                     if (length > 0) {
                         this.mAppsSize += length;
                         this.allDataSize += length;
+                        updateUI();
                     }
                 }
             } catch (Exception e) {
@@ -348,13 +533,7 @@ public class LoadAllDataActivity extends AppCompatActivity {
     }
 
     public final void updateUI() {
-        SpotsDialog spotsDialog2 = this.spotsDialog;
         ActivityLoadAllDataBinding activityLoadAllDataBinding = null;
-        if (spotsDialog2 == null) {
-            Intrinsics.throwUninitializedPropertyAccessException("spotsDialog");
-            spotsDialog2 = null;
-        }
-        spotsDialog2.dismiss();
         ActivityLoadAllDataBinding activityLoadAllDataBinding2 = this.binding;
         if (activityLoadAllDataBinding2 == null) {
             Intrinsics.throwUninitializedPropertyAccessException("binding");
@@ -399,5 +578,4 @@ public class LoadAllDataActivity extends AppCompatActivity {
         }
         activityLoadAllDataBinding.tvContactsSize.setText(this.mContactList.size() + " contacts");
     }
-
 }

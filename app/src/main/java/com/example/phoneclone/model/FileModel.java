@@ -10,7 +10,7 @@ public final class FileModel {
     private final String path;
     private final String type;
 
-    public static /* synthetic */ FileModel copy$default(FileModel fileModel, String str, String str2, String str3, ApplicationInfo applicationInfo, boolean z, int i, Object obj) {
+    public static  FileModel copy$default(FileModel fileModel, String str, String str2, String str3, ApplicationInfo applicationInfo, boolean z, int i, Object obj) {
         if ((i & 1) != 0) {
             str = fileModel.name;
         }

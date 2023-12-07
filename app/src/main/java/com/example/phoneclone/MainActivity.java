@@ -86,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
             StringBuilder sb2 = new StringBuilder();
             i = log10;
             sb2.append(new DecimalFormat(str).format(d2 / Math.pow(1024.0d, (double) log102)));
+            str3 = str2;
             sb2.append(' ');
             sb2.append(strArr2[log102]);
             str8 = sb2.toString();
@@ -120,9 +121,9 @@ public class MainActivity extends AppCompatActivity {
         }
         Math.pow(1024.0d, (double) log102);
         Math.pow(1024.0d, (double) i);
-//        replace$default(str3, " ", "", false, 4, (Object) null);
-//        replace$default(str9, " ", "", false, 4, (Object) null);
-//        replace$default(str8, " ", "", false, 4, (Object) null);
+        replace(str3, " ", "", false, 4, (Object) null);
+        replace(str9, " ", "", false, 4, (Object) null);
+        replace(str8, " ", "", false, 4, (Object) null);
         ActivityMainBinding activityMainBinding = this.binding;
         ActivityMainBinding activityMainBinding2 = null;
         if (activityMainBinding == null) {
@@ -144,6 +145,13 @@ public class MainActivity extends AppCompatActivity {
         }
         activityMainBinding2.tvAvailableSpace.setText(str8);
         Log.e("abc", "Available : " + str8 + "..." + str3 + "..... " + str9);
+    }
+
+    public static  String replace(String str, String str2, String str3, boolean z, int i, Object obj) {
+        if ((i & 4) != 0) {
+            z = false;
+        }
+        return StringsKt.replace(str, str2, str3, z);
     }
 
     public static final void OldPhoneData(MainActivity mainActivity, View view) {

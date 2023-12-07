@@ -62,9 +62,10 @@ dependencies {
 
     // LiveData
 
-    implementation ("androidx.lifecycle:lifecycle-viewmodel:2.3.1")
-    implementation ("androidx.lifecycle:lifecycle-livedata:2.3.1")
-    implementation ("androidx.lifecycle:lifecycle-common-java8:2.3.1")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel:2.4.0")
+    implementation ("androidx.lifecycle:lifecycle-livedata:2.4.0")
+    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
+   // implementation ("androidx.lifecycle:lifecycle-common-java8:2.3.1")
 
 
     implementation ("androidx.core:core-ktx:1.3.2")
@@ -72,5 +73,7 @@ dependencies {
     implementation("com.github.d-max:spots-dialog:1.1@aar")
 
     implementation ("androidx.legacy:legacy-support-v4:1.0.0")
+    implementation ("com.google.code.gson:gson:2.8.2")
+    implementation("com.opencsv:opencsv:4.1")
 
 }

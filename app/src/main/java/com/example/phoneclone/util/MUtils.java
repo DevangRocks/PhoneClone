@@ -10,13 +10,20 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 import android.text.format.Time;
+import android.view.View;
+import android.view.Window;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.phoneclone.R;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
+import kotlin.collections.CollectionsKt;
+import kotlin.jvm.functions.Function1;
 import kotlin.jvm.internal.Intrinsics;
 import kotlin.jvm.internal.StringCompanionObject;
 import kotlin.text.StringsKt;
@@ -53,7 +60,7 @@ public final class MUtils {
         int i = (j2 > PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID ? 1 : (j2 == PlaybackStateCompat.ACTION_PLAY_FROM_MEDIA_ID ? 0 : -1));
         if (i < 0) {
             return j2 + " Bytes";
-        } else if (i >= 0 && j2 <PlaybackStateCompat.ACTION_SET_CAPTIONING_ENABLED) {
+        } else if (i >= 0 && j2 < PlaybackStateCompat.ACTION_SET_CAPTIONING_ENABLED) {
             StringBuilder sb = new StringBuilder();
             StringCompanionObject stringCompanionObject = StringCompanionObject.INSTANCE;
             String format = String.format("%.2f", Arrays.copyOf(new Object[]{Double.valueOf(d)}, 1));
@@ -108,7 +115,21 @@ public final class MUtils {
         }
     }
 
-//    public  String formatDateForGroup(long j, Context context, boolean z) {
+    public final boolean verifyAppInstallation(Context context) {
+        Intrinsics.checkNotNullParameter(context, "context");
+        List arrayList = new ArrayList(CollectionsKt.listOf("com.android.vending", "com.google.android.feedback"));
+        String installerPackageName = context.getPackageManager().getInstallerPackageName(context.getPackageName());
+        return installerPackageName != null && arrayList.contains(installerPackageName);
+    }
+
+//    public static /* synthetic */ String formatDateForGroup$default(MUtils mUtils, long j, Context context, boolean z, int i, Object obj) {
+//        if ((i & 2) != 0) {
+//            z = false;
+//        }
+//        return mUtils.formatDateForGroup(j, context, z);
+//    }
+
+//    public final String formatDateForGroup(long j, Context context, boolean z) {
 //        Intrinsics.checkNotNullParameter(context, "context");
 //        Calendar instance = Calendar.getInstance();
 //        instance.setTimeInMillis(j);
@@ -123,7 +144,7 @@ public final class MUtils {
 //        } else {
 //            String str = "dd/MM/yyyy";
 //            if (!z && isThisYear(j)) {
-//                str = StringsKt.trim(StringsKt.trim(StringsKt.trim(StringsKt.trim((CharSequence) StringsKt.replace$default(str, "y", "", false, 4, (Object) null)).toString(), '-'), '.'), '/');
+//               // str = StringsKt.trim(StringsKt.trim(StringsKt.trim(StringsKt.trim((CharSequence) StringsKt.replace$default(str, "y", "", false, 4, (Object) null)).toString(), '-'), '.'), '/');
 //            }
 //            return DateFormat.format(str, instance).toString();
 //        }
@@ -136,5 +157,18 @@ public final class MUtils {
         time.set(System.currentTimeMillis());
         return i == time.year;
     }
+    public static final void showPermissionDialog$lambda$0(Dialog dialog, Function1 function1, View view) {
+        Intrinsics.checkNotNullParameter(dialog, "$permissionDialog");
+        Intrinsics.checkNotNullParameter(function1, "$callback");
+        dialog.dismiss();
+        function1.invoke(true);
+    }
 
+    /* access modifiers changed from: private */
+    public static final void showPermissionDialog$lambda$1(Function1 function1, Dialog dialog, View view) {
+        Intrinsics.checkNotNullParameter(function1, "$callback");
+        Intrinsics.checkNotNullParameter(dialog, "$permissionDialog");
+        function1.invoke(false);
+        dialog.dismiss();
+    }
 }

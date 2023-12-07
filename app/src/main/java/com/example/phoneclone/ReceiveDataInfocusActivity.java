@@ -23,6 +23,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.phoneclone.discovery.Device;
+import com.example.phoneclone.transfer.TransferService;
 import com.example.phoneclone.util.Permissions;
 import com.example.phoneclone.util.Settings;
 import com.skyfishjy.library.RippleBackground;
@@ -248,11 +249,11 @@ public class ReceiveDataInfocusActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Device device = mDeviceAdapter.getDevice(position);
 
-//                Intent startTransfer = new Intent(ShareActivity.this, TransferService.class);
-//                startTransfer.setAction(TransferService.ACTION_START_TRANSFER);
-//                startTransfer.putExtra(TransferService.EXTRA_DEVICE, device);
-//                startTransfer.putParcelableArrayListExtra(TransferService.EXTRA_URIS, uriList);
-//                startService(startTransfer);
+                Intent startTransfer = new Intent(ReceiveDataInfocusActivity.this, TransferService.class);
+                startTransfer.setAction(TransferService.ACTION_START_TRANSFER);
+                startTransfer.putExtra(TransferService.EXTRA_DEVICE, device);
+               // startTransfer.putParcelableArrayListExtra(TransferService.EXTRA_URIS, uriList);
+                startService(startTransfer);
 
                 // Close the activity
                 ReceiveDataInfocusActivity.this.setResult(RESULT_OK);

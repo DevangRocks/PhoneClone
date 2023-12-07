@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.view.View;
 
 import com.example.phoneclone.CommonClass.MConstants;
@@ -68,7 +69,7 @@ public class PhoneCloneDataActivity extends AppCompatActivity {
             }
         }
         if (phoneCloneDataActivity.checkIfPermissionsGranted()) {
-//            phoneCloneDataActivity.startActivity(new Intent(phoneCloneDataActivity, ReceiveDataInfocusActivity.class).putExtra("user", "receiver"));
+            //phoneCloneDataActivity.startActivity(new Intent(phoneCloneDataActivity, ChooseConnectionActivity.class).putExtra("user", "receiver"));
 
             Intent shareIntent = new Intent(phoneCloneDataActivity, ReceiveDataInfocusActivity.class);
             shareIntent.setAction("android.intent.action.SEND_MULTIPLE");
@@ -96,9 +97,13 @@ public class PhoneCloneDataActivity extends AppCompatActivity {
             }
         }
         if (phoneCloneDataActivity.checkIfPermissionsGranted()) {
-            Intent i = new Intent(phoneCloneDataActivity, LoadAllDataActivity.class);
-            i.putExtra("total", phoneCloneDataActivity.binding.tvTotalStorage.getText().toString());
-            phoneCloneDataActivity.startActivity(i);
+            new Handler().postDelayed(new Runnable() {
+                public void run() {
+                    Intent i = new Intent(phoneCloneDataActivity, LoadAllDataActivity.class);
+                    i.putExtra("total", phoneCloneDataActivity.binding.tvTotalStorage.getText().toString());
+                    phoneCloneDataActivity.startActivity(i);
+                }
+            }, 500);
         }
     }
 
