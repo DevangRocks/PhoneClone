@@ -33,21 +33,17 @@ import java.util.Stack;
  */
 public class TransferService extends Service {
 
+    public static final String ACTION_BROADCAST = ".BROADCAST";
+    public static final String ACTION_REMOVE_TRANSFER = ".REMOVE_TRANSFER";
+    public static final String ACTION_START_LISTENING = ".START_LISTENING";
+    public static final String ACTION_START_TRANSFER = ".START_TRANSFER";
+    public static final String ACTION_STOP_LISTENING = ".STOP_LISTENING";
+    public static final String ACTION_STOP_TRANSFER = ".STOP_TRANSFER";
+    public static final String EXTRA_DEVICE = ".DEVICE";
+    public static final String EXTRA_ID = ".ID";
+    public static final String EXTRA_TRANSFER = ".TRANSFER";
+    public static final String EXTRA_URIS = ".URLS";
     private static final String TAG = "TransferService";
-
-    public static final String ACTION_START_LISTENING = "net.nitroshare.android.START_LISTENING";
-    public static final String ACTION_STOP_LISTENING = "net.nitroshare.android.STOP_LISTENING";
-
-    public static final String ACTION_START_TRANSFER = "net.nitroshare.android.START_TRANSFER";
-    public static final String EXTRA_DEVICE = "net.nitroshare.android.DEVICE";
-    public static final String EXTRA_URIS = "net.nitroshare.android.URLS";
-    public static final String EXTRA_ID = "net.nitroshare.android.ID";
-
-    public static final String ACTION_STOP_TRANSFER = "net.nitroshare.android.STOP_TRANSFER";
-    public static final String ACTION_REMOVE_TRANSFER = "net.nitroshare.android.REMOVE_TRANSFER";
-    public static final String EXTRA_TRANSFER = "net.nitroshare.android.TRANSFER";
-
-    public static final String ACTION_BROADCAST = "net.nitroshare.android.BROADCAST";
 
     /**
      * Start or stop the service
@@ -188,7 +184,7 @@ public class TransferService extends Service {
     private Bundle createBundle(ArrayList<Parcelable> uriList) throws IOException {
         Bundle bundle = new Bundle();
         try {
-            if (uriList == null) {
+            if (uriList != null) {
                 for (Parcelable parcelable : uriList) {
                     Uri uri = (Uri) parcelable;
                     switch (uri.getScheme()) {
@@ -210,7 +206,7 @@ public class TransferService extends Service {
                     }
                 }
             } else {
-                Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Transfer", Toast.LENGTH_SHORT).show();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

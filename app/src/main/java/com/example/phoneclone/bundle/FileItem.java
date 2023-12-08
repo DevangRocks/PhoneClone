@@ -12,12 +12,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * An individual file for transfer
- *
- * Note that Android's Java doesn't include java.nio.file so only the
- * last_modified property is usable on the platform.
- */
 public class FileItem extends Item {
 
     public static final String TYPE_NAME = "file";
@@ -37,12 +31,6 @@ public class FileItem extends Item {
     private FileInputStream mInputStream;
     private FileOutputStream mOutputStream;
 
-    /**
-     * Create a new file item using the provided properties
-     * @param transferDirectory directory for the file
-     * @param properties map of properties for the file
-     * @param overwrite true to overwrite an existing file
-     */
     public FileItem(String transferDirectory, Map<String, Object> properties, boolean overwrite) throws IOException {
         mProperties = properties;
         File parentDir = new File(transferDirectory);
@@ -66,17 +54,10 @@ public class FileItem extends Item {
             }
         }
     }
-
-    /**
-     * Create a new file item from the specified file
-     */
     public FileItem(File file) {
         this(file, file.getName());
     }
 
-    /**
-     * Create a new file item with the specified filename
-     */
     public FileItem(File file, String filename) {
         mFile = file;
         mProperties = new HashMap<>();

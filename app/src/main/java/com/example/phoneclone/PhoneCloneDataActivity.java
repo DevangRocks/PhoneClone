@@ -18,6 +18,7 @@ import com.example.phoneclone.databinding.ActivityPhoneCloneDataBinding;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+
 import kotlin.jvm.internal.Intrinsics;
 
 public class PhoneCloneDataActivity extends AppCompatActivity {
@@ -79,7 +80,7 @@ public class PhoneCloneDataActivity extends AppCompatActivity {
     }
 
     public static void OldPhoneDataClick(PhoneCloneDataActivity phoneCloneDataActivity, View view) {
-        Intrinsics.checkNotNullParameter(phoneCloneDataActivity, "this$0");
+        // Intrinsics.checkNotNullParameter(phoneCloneDataActivity, "this$0");
         if (Build.VERSION.SDK_INT >= 30 && !Environment.isExternalStorageManager()) {
             try {
                 Intent intent = new Intent("android.settings.MANAGE_APP_ALL_FILES_ACCESS_PERMISSION");
@@ -97,13 +98,9 @@ public class PhoneCloneDataActivity extends AppCompatActivity {
             }
         }
         if (phoneCloneDataActivity.checkIfPermissionsGranted()) {
-            new Handler().postDelayed(new Runnable() {
-                public void run() {
-                    Intent i = new Intent(phoneCloneDataActivity, LoadAllDataActivity.class);
-                    i.putExtra("total", phoneCloneDataActivity.binding.tvTotalStorage.getText().toString());
-                    phoneCloneDataActivity.startActivity(i);
-                }
-            }, 500);
+            Intent i = new Intent(phoneCloneDataActivity, LoadAllDataActivity.class);
+            i.putExtra("total", phoneCloneDataActivity.binding.tvTotalStorage.getText().toString());
+            phoneCloneDataActivity.startActivity(i);
         }
     }
 

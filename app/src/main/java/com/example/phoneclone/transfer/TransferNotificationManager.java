@@ -19,13 +19,7 @@ import com.example.phoneclone.R;
 import com.example.phoneclone.TransferActivity;
 import com.example.phoneclone.util.Settings;
 
-/**
- * Manage notifications and service lifecycle
- * <p>
- * A persistent notification is shown as long as the transfer service is
- * running. A notification is also shown for each transfer in progress,
- * enabling it to be individually cancelled or retried.
- */
+
 class TransferNotificationManager {
 
     private static final String TAG = "TransferNotificationMgr";
@@ -178,9 +172,6 @@ class TransferNotificationManager {
         removeNotification(transferStatus.getId());
     }
 
-    /**
-     * Update a transfer in progress
-     */
     @SuppressLint({"UnspecifiedImmutableFlag", "NotificationPermission"})
     synchronized void updateTransfer(TransferStatus transferStatus, Intent intent) {
         if (transferStatus.isFinished()) {

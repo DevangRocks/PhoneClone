@@ -26,8 +26,6 @@ import com.example.phoneclone.discovery.Device;
 import com.example.phoneclone.transfer.TransferService;
 import com.example.phoneclone.util.Permissions;
 import com.example.phoneclone.util.Settings;
-import com.skyfishjy.library.RippleBackground;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,32 +33,14 @@ import java.util.Map;
 
 public class ReceiveDataInfocusActivity extends AppCompatActivity {
     private static final String TAG = "ShareActivity";
-
-    /**
-     * Adapter that discovers other devices on the network
-     */
     private class DeviceAdapter extends ArrayAdapter<String> {
-
-        /**
-         * Maintain a mapping of device IDs to discovered devices
-         */
         private final Map<String, Device> mDevices = new HashMap<>();
 
-        /**
-         * Maintain a queue of devices to resolve
-         */
         private final List<NsdServiceInfo> mQueue = new ArrayList<>();
 
         private NsdManager mNsdManager;
         private String mThisDeviceName;
 
-        /**
-         * Prepare to resolve the next service
-         *
-         * For some inexplicable reason, Android chokes miserably when
-         * resolving more than one service at a time. The queue performs each
-         * resolution sequentially.
-         */
         private void prepareNextService() {
             synchronized (mQueue) {
                 mQueue.remove(0);
@@ -71,9 +51,6 @@ public class ReceiveDataInfocusActivity extends AppCompatActivity {
             resolveNextService();
         }
 
-        /**
-         * Resolve the next service in the queue
-         */
         private void resolveNextService() {
             NsdServiceInfo serviceInfo;
             synchronized (mQueue) {
@@ -252,7 +229,7 @@ public class ReceiveDataInfocusActivity extends AppCompatActivity {
                 Intent startTransfer = new Intent(ReceiveDataInfocusActivity.this, TransferService.class);
                 startTransfer.setAction(TransferService.ACTION_START_TRANSFER);
                 startTransfer.putExtra(TransferService.EXTRA_DEVICE, device);
-               // startTransfer.putParcelableArrayListExtra(TransferService.EXTRA_URIS, uriList);
+                startTransfer.putParcelableArrayListExtra(TransferService.EXTRA_URIS, uriList);
                 startService(startTransfer);
 
                 // Close the activity

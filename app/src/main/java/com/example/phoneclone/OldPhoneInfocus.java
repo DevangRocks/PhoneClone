@@ -19,6 +19,7 @@ import com.example.phoneclone.CommonClass.ControlImageList;
 import com.example.phoneclone.CommonClass.ControlVideoList;
 import com.example.phoneclone.CommonClass.SelectAllData;
 import com.google.android.material.checkbox.MaterialCheckBox;
+import com.google.android.material.textview.MaterialTextView;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -35,6 +36,7 @@ public class OldPhoneInfocus extends AppCompatActivity {
     private boolean main_selection_ischeck;
     private int selected;
     private int total;
+    MaterialTextView videoItem, imageItem,fileItem, audioItem, appItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

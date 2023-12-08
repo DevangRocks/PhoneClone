@@ -1,8 +1,10 @@
 package com.example.phoneclone;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -11,12 +13,17 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Parcelable;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.example.phoneclone.CommonClass.MConstants;
 import com.example.phoneclone.databinding.ActivityLoadAllDataBinding;
@@ -25,12 +32,14 @@ import com.example.phoneclone.model.FileModel;
 import com.example.phoneclone.transfer.TransferService;
 import com.example.phoneclone.util.MUtils;
 import com.example.phoneclone.util.Settings;
+import com.google.android.material.internal.ParcelableSparseArray;
 
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import dmax.dialog.SpotsDialog;
@@ -48,7 +57,11 @@ public class LoadAllDataActivity extends AppCompatActivity {
     public ArrayList<FileModel> mPicturesList = new ArrayList<>();
     public long mImagesSize;
     public ArrayList<FileModel> mVideosList = new ArrayList<>();
+    public Parcelable buildUriList ;
+    public ArrayList<Parcelable>  arr = new ArrayList<>();
+    public ArrayList<Parcelable>  arr1 = new ArrayList<>();
     public long mVideosSize;
+    Uri parcelableUri;
 
     public ArrayList<FileModel> mMusicList = new ArrayList<>();
     public long mMusicsSize;
@@ -60,6 +73,10 @@ public class LoadAllDataActivity extends AppCompatActivity {
     private static final int SHARE_REQUEST = 1;
     private final String[] projection = {"contact_id", "display_name", "data1"};
     private Settings mSettings;
+    LinearLayout progress_layout;
+    ProgressDialog pDialog;
+    static boolean process_successfully = false;
+    GetStatusTask get_word_taskimg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,54 +92,25 @@ public class LoadAllDataActivity extends AppCompatActivity {
         setContentView((View) inflate.getRoot());
         binding.tvTotalSize.setText(getIntent().getStringExtra("total"));
 
-        SharedPreferences sharedPreferences2 = getSharedPreferences(MConstants.prefName, 0);
-        Intrinsics.checkNotNullExpressionValue(sharedPreferences2, "getSharedPreferences(prefName, MODE_PRIVATE)");
-        this.sharedPreferences = sharedPreferences2;
-        //showDialog();
-//        Job unused = BuildersKt.launch(CoroutineScopeKt.CoroutineScope(Dispatchers.getIO()), (CoroutineContext) null, (CoroutineStart) null, new ActivityLoadAllDataOnCreate(this, (Continuation<? super ActivityLoadAllDataOnCreate>) null), 3, (Object) null);
         binding.btnCancel.setOnClickListener(new View.OnClickListener() {
             public final void onClick(View view) {
                 finish();
             }
         });
-        loadApps();
-        loadFiles();
-        loadMusic();
-        loadVideos();
-        loadPictures();
-        getContactList();
 
+        loadAllData();
+        this.get_word_taskimg = new GetStatusTask();
+        this.get_word_taskimg.execute(new String[0]);
         binding.btnShare.setOnClickListener(new View.OnClickListener() {
             public final void onClick(View view) {
                 Intent shareIntent = new Intent(LoadAllDataActivity.this, ReceiveDataInfocusActivity.class);
                 shareIntent.setAction("android.intent.action.SEND_MULTIPLE");
-                //shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+                shareIntent.putExtra(Intent.EXTRA_STREAM, parcelableUri);
                 LoadAllDataActivity.this.startActivityForResult(shareIntent, SHARE_REQUEST);
 
+                Log.d("parcableUri", parcelableUri.toString());
+
             }
-        });
-
-        binding.layoutImages.setOnClickListener(view -> {
-           // loadPictures();
-        });
-
-        binding.layoutVideos.setOnClickListener(view -> {
-           // loadVideos();
-        });
-
-        binding.layoutMusic.setOnClickListener(view -> {
-           // loadMusic();
-        });
-
-        binding.layoutFiles.setOnClickListener(view -> {
-           // loadFiles();
-        });
-
-        binding.layoutApps.setOnClickListener(view -> {
-           // loadApps();
-        });
-        binding.layoutContacts.setOnClickListener(view -> {
-            //getContactList();
         });
 
         binding.checkboxApps.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -156,7 +144,49 @@ public class LoadAllDataActivity extends AppCompatActivity {
         });
 
     }
+    public void loadAllData() {
+        try {
+            loadApps();
+            loadFiles();
+            loadMusic();
+            loadVideos();
+            //loadPictures();
+           getContactList();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    public class GetStatusTask extends AsyncTask<String, Void, String> {
+        public GetStatusTask() {
+        }
+
+        public void onPreExecute() {
+            super.onPreExecute();
+            LoadAllDataActivity.this.pDialog = new ProgressDialog(LoadAllDataActivity.this);
+            LoadAllDataActivity.this.pDialog.setMessage("Wait for a second ...");
+            LoadAllDataActivity.this.pDialog.setIndeterminate(false);
+            LoadAllDataActivity.this.pDialog.setCancelable(false);
+            LoadAllDataActivity.this.pDialog.show();
+        }
+        public String doInBackground(String... strArr) {
+            LoadAllDataActivity.process_successfully = false;
+            LoadAllDataActivity.this.loadPictures();
+            return null;
+        }
+
+        public void onPostExecute(String str) {
+            if (LoadAllDataActivity.this.pDialog != null) {
+                LoadAllDataActivity.this.pDialog.dismiss();
+            }
+            if (LoadAllDataActivity.process_successfully) {
+                LoadAllDataActivity loadAllDataActivity = LoadAllDataActivity.this;
+                loadAllDataActivity.updateUI();
+            } else {
+                Toast.makeText(LoadAllDataActivity.this, "Process Failed...", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
     public final void getContactList() {
         Throwable th;
         ContentResolver contentResolver = getContentResolver();
@@ -174,15 +204,15 @@ public class LoadAllDataActivity extends AppCompatActivity {
                         Intrinsics.checkNotNullExpressionValue(string, "cursor.getString(nameIndex)");
                         String string2 = cursor.getString(columnIndex2);
                         Intrinsics.checkNotNullExpressionValue(string2, "cursor.getString(numberIndex)");
-                        String replace$default = replace(string2, " ", "", false, 4, (Object) null);
-                        if (!hashSet.contains(replace$default)) {
-                             replace$default = replace(replace(replace(replace$default, " ", "", false, 4, (Object) null), "*", "", false, 4, (Object) null), "-", "", false, 4, (Object) null);
-                            File csvFile = getCsvFile(replace$default);
+                        String replaceDefault = replace(string2, " ", "", false, 4, (Object) null);
+                        if (!hashSet.contains(replaceDefault)) {
+                             replaceDefault = replace(replace(replace(replaceDefault, " ", "", false, 4, (Object) null), "*", "", false, 4, (Object) null), "-", "", false, 4, (Object) null);
+                            File csvFile = getCsvFile(replaceDefault);
                             if (csvFile == null) {
-                                csvFile = createCsvFile(replace$default);
+                                csvFile = createCsvFile(replaceDefault);
                             }
-                            this.mContactList.add(new ContactModel(string, replace$default, String.valueOf(csvFile != null ? csvFile.getAbsolutePath() : null)));
-                            hashSet.add(replace$default);
+                            this.mContactList.add(new ContactModel(string, replaceDefault, String.valueOf(csvFile != null ? csvFile.getAbsolutePath() : null)));
+                            hashSet.add(replaceDefault);
                         }
                     }
                     updateUI();
@@ -264,74 +294,6 @@ public class LoadAllDataActivity extends AppCompatActivity {
             }
         }
     }
-
-    private void showDialog() {
-        Context context = this;
-        AlertDialog build = new SpotsDialog.Builder().setContext(context).setContext(context).setMessage("Data Loading...").setTheme(R.style.MyDialog).build();
-        Intrinsics.checkNotNull(build, "null cannot be cast to non-null type dmax.dialog.SpotsDialog");
-        SpotsDialog spotsDialog2 = (SpotsDialog) build;
-        this.spotsDialog = spotsDialog2;
-        if (spotsDialog2 == null) {
-            spotsDialog2 = null;
-        }
-        spotsDialog2.show();
-    }
-
-//    public final void setupCheckboxListeners() {
-//        ActivityLoadAllDataBinding activityLoadAllDataBinding = this.binding;
-//        ActivityLoadAllDataBinding activityLoadAllDataBinding2 = null;
-//        if (activityLoadAllDataBinding == null) {
-//            Intrinsics.throwUninitializedPropertyAccessException("binding");
-//            activityLoadAllDataBinding = null;
-//        }
-//        activityLoadAllDataBinding.checkboxApps.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            public final void onCheckedChanged(CompoundButton compoundButton, boolean z) {
-//                LoadAllDataActivity.setupCheckboxListeners$lambda$3(LoadAllDataActivity.this, compoundButton, z);
-//            }
-//        });
-//        ActivityLoadAllDataBinding activityLoadAllDataBinding3 = this.binding;
-//        if (activityLoadAllDataBinding3 == null) {
-//            Intrinsics.throwUninitializedPropertyAccessException("binding");
-//            activityLoadAllDataBinding3 = null;
-//        }
-//        activityLoadAllDataBinding3.checkboxFiles.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            public final void onCheckedChanged(CompoundButton compoundButton, boolean z) {
-//                LoadAllDataActivity.setupCheckboxListeners$lambda$4(LoadAllDataActivity.this, compoundButton, z);
-//            }
-//        });
-//        ActivityLoadAllDataBinding activityLoadAllDataBinding4 = this.binding;
-//        if (activityLoadAllDataBinding4 == null) {
-//            Intrinsics.throwUninitializedPropertyAccessException("binding");
-//            activityLoadAllDataBinding4 = null;
-//        }
-//        activityLoadAllDataBinding4.checkboxMusic.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            public final void onCheckedChanged(CompoundButton compoundButton, boolean z) {
-//                LoadAllDataActivity.setupCheckboxListeners$lambda$5(LoadAllDataActivity.this, compoundButton, z);
-//            }
-//        });
-//        ActivityLoadAllDataBinding activityLoadAllDataBinding5 = this.binding;
-//        if (activityLoadAllDataBinding5 == null) {
-//            Intrinsics.throwUninitializedPropertyAccessException("binding");
-//            activityLoadAllDataBinding5 = null;
-//        }
-//        activityLoadAllDataBinding5.checkboxImages.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            public final void onCheckedChanged(CompoundButton compoundButton, boolean z) {
-//                LoadAllDataActivity.setupCheckboxListeners$lambda$6(LoadAllDataActivity.this, compoundButton, z);
-//            }
-//        });
-//        ActivityLoadAllDataBinding activityLoadAllDataBinding6 = this.binding;
-//        if (activityLoadAllDataBinding6 == null) {
-//            Intrinsics.throwUninitializedPropertyAccessException("binding");
-//        } else {
-//            activityLoadAllDataBinding2 = activityLoadAllDataBinding6;
-//        }
-//        activityLoadAllDataBinding2.checkboxVideos.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            public final void onCheckedChanged(CompoundButton compoundButton, boolean z) {
-//                LoadAllDataActivity.setupCheckboxListeners$lambda$7(LoadAllDataActivity.this, compoundButton, z);
-//            }
-//        });
-//    }
-
     public static final void setupCheckboxListeners$lambda$7(LoadAllDataActivity activityLoadAllData, CompoundButton compoundButton, boolean z) {
         Intrinsics.checkNotNullParameter(activityLoadAllData, "this$0");
         if (z) {
@@ -393,6 +355,23 @@ public class LoadAllDataActivity extends AppCompatActivity {
                 String string3 = query.getString(query.getColumnIndexOrThrow("_size"));
                 if (!(string == null || string2 == null || string3 == null)) {
                     this.mPicturesList.add(new FileModel(string, string2, "Images", (ApplicationInfo) null, false, 24, (DefaultConstructorMarker) null));
+                    this.buildUriList = Uri.parse(string2);
+                    this.arr.add(buildUriList);
+
+                    ParcelableArrayList<String> parcelableList = new ParcelableArrayList<>(mPicturesList);
+
+                    Uri.Builder builder = new Uri.Builder();
+                    builder.scheme("content") // Change to your desired scheme
+                            .authority("com.example.phoneclone") // Change to your authority
+                            .appendQueryParameter("dataList", parcelableList.toString()); // Add Parcelable as a query parameter
+
+                        parcelableUri = builder.build();
+                    Log.d("URI:", parcelableUri.toString());
+
+                    String dataListString = parcelableUri.getQueryParameter("dataList");
+                    //
+                    // ParcelableArrayList<String> retrievedList = ParcelableArrayList.(dataListString);
+
                     try {
                         long length = new File(string2).length();
                         if (length > 0) {
@@ -404,7 +383,11 @@ public class LoadAllDataActivity extends AppCompatActivity {
                 }
             }
             query.close();
-            updateUI();
+            process_successfully = true;
+           /* updateUI();*/
+
+        } else {
+            process_successfully = false;
         }
     }
 
@@ -426,6 +409,17 @@ public class LoadAllDataActivity extends AppCompatActivity {
                 String string3 = query.getString(query.getColumnIndexOrThrow("_size"));
                 if (!(string == null || string2 == null || string3 == null)) {
                     this.mVideosList.add(new FileModel(string, string2, "Videos", (ApplicationInfo) null, false, 24, (DefaultConstructorMarker) null));
+//                    this.buildUriList = Uri.parse(string2);
+//                    this.arr.add(buildUriList);
+                    ParcelableArrayList<String> parcelableList = new ParcelableArrayList<>(mPicturesList);
+
+                    Uri.Builder builder = new Uri.Builder();
+                    builder.scheme("content") // Change to your desired scheme
+                            .authority("com.example.phoneclone") // Change to your authority
+                            .appendQueryParameter("dataList", parcelableList.toString()); // Add Parcelable as a query parameter
+
+                    parcelableUri = builder.build();
+                    Log.d("pURI:", parcelableUri.toString());
                     try {
                         long length = new File(string2).length();
                         if (length > 0) {
@@ -441,6 +435,7 @@ public class LoadAllDataActivity extends AppCompatActivity {
         }
     }
 
+
     public final void loadMusic() {
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         Intrinsics.checkNotNullExpressionValue(uri, "EXTERNAL_CONTENT_URI");
@@ -452,6 +447,8 @@ public class LoadAllDataActivity extends AppCompatActivity {
                 String string3 = query.getString(query.getColumnIndexOrThrow("_size"));
                 if (!(string == null || string2 == null || string3 == null)) {
                     this.mMusicList.add(new FileModel(string, string2, "Music", (ApplicationInfo) null, false, 24, (DefaultConstructorMarker) null));
+//                    this.buildUriList = Uri.parse(string2);
+//                    this.arr.add(buildUriList);
                     try {
                         long length = new File(string2).length();
                         if (length > 0) {
@@ -470,27 +467,33 @@ public class LoadAllDataActivity extends AppCompatActivity {
         Uri contentUri = MediaStore.Files.getContentUri("external");
         Intrinsics.checkNotNullExpressionValue(contentUri, "getContentUri(\"external\")");
         Cursor query = getContentResolver().query(contentUri, new String[]{"_id", "_display_name", "_data", "_size"}, "media_type=0", (String[]) null, (String) null);
-        if (query != null) {
-            while (query.moveToNext()) {
-                String string = query.getString(query.getColumnIndexOrThrow("_display_name"));
-                String string2 = query.getString(query.getColumnIndexOrThrow("_data"));
-                String string3 = query.getString(query.getColumnIndexOrThrow("_size"));
-                if (!(string == null || string2 == null || string3 == null)) {
-                    if (endsWith$default(string, ".pdf", false, 2, (Object) null) || endsWith$default(string, ".txt", false, 2, (Object) null) || endsWith$default(string, ".docx", false, 2, (Object) null) || endsWith$default(string, ".xlsx", false, 2, (Object) null)) {
-                        this.mOtherFilesList.add(new FileModel(string, string2, "Apps", (ApplicationInfo) null, false, 24, (DefaultConstructorMarker) null));
-                        try {
-                            long length = new File(string2).length();
-                            if (length > 0) {
-                                this.mFilesSize += length;
-                                this.allDataSize += length;
+        try {
+            if (query != null) {
+                while (query.moveToNext()) {
+                    String string = query.getString(query.getColumnIndexOrThrow("_display_name"));
+                    String string2 = query.getString(query.getColumnIndexOrThrow("_data"));
+                    String string3 = query.getString(query.getColumnIndexOrThrow("_size"));
+                    if (!(string == null || string2 == null || string3 == null)) {
+                        if (endsWith$default(string, ".pdf", false, 2, (Object) null) || endsWith$default(string, ".txt", false, 2, (Object) null) || endsWith$default(string, ".docx", false, 2, (Object) null) || endsWith$default(string, ".xlsx", false, 2, (Object) null)) {
+                            this.mOtherFilesList.add(new FileModel(string, string2, "Apps", (ApplicationInfo) null, false, 24, (DefaultConstructorMarker) null));
+    //                        this.buildUriList = Uri.parse(string2);
+    //                        this.arr.add(buildUriList);
+                            try {
+                                long length = new File(string2).length();
+                                if (length > 0) {
+                                    this.mFilesSize += length;
+                                    this.allDataSize += length;
+                                }
+                            } catch (Exception unused) {
                             }
-                        } catch (Exception unused) {
                         }
                     }
                 }
+                query.close();
+                updateUI();
             }
-            query.close();
-            updateUI();
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -521,6 +524,9 @@ public class LoadAllDataActivity extends AppCompatActivity {
                     FileModel fileModel = r8;
                     FileModel fileModel2 = new FileModel(obj, path, "Apps", (ApplicationInfo) null, false, 24, (DefaultConstructorMarker) null);
                     arrayList.add(fileModel2);
+                    //this.buildUriList = mAppsList;
+//                    this.buildUriList = Uri.parse(str);
+//                    this.arr.add(buildUriList);
                     if (length > 0) {
                         this.mAppsSize += length;
                         this.allDataSize += length;
@@ -533,49 +539,26 @@ public class LoadAllDataActivity extends AppCompatActivity {
     }
 
     public final void updateUI() {
-        ActivityLoadAllDataBinding activityLoadAllDataBinding = null;
-        ActivityLoadAllDataBinding activityLoadAllDataBinding2 = this.binding;
-        if (activityLoadAllDataBinding2 == null) {
-            Intrinsics.throwUninitializedPropertyAccessException("binding");
-            activityLoadAllDataBinding2 = null;
+
+        binding.tvImagesSize.setText(this.mPicturesList.size() + " | " + MUtils.INSTANCE.size(this.mImagesSize));
+
+        binding.tvVideosSize.setText(this.mVideosList.size() + " | " + MUtils.INSTANCE.size(this.mVideosSize));
+
+        binding.tvMusicSize.setText(this.mMusicList.size() + " | " + MUtils.INSTANCE.size(this.mMusicsSize));
+
+        binding.tvFilesSize.setText(this.mOtherFilesList.size() + " | " + MUtils.INSTANCE.size(this.mFilesSize));
+
+        binding.tvAppsSize.setText(this.mAppsList.size() + " | " + MUtils.INSTANCE.size(this.mAppsSize));
+
+        binding.tvTotalSize.setText("Selected\n" + MUtils.INSTANCE.size(this.allDataSize));
+
+
+        binding.tvContactsSize.setText(this.mContactList.size() + " contacts");
+    }
+
+    private class ParcelableArrayList<T> {
+        public ParcelableArrayList(ArrayList<FileModel> mPicturesList) {
+
         }
-        activityLoadAllDataBinding2.tvImagesSize.setText(this.mPicturesList.size() + " | " + MUtils.INSTANCE.size(this.mImagesSize));
-        ActivityLoadAllDataBinding activityLoadAllDataBinding3 = this.binding;
-        if (activityLoadAllDataBinding3 == null) {
-            Intrinsics.throwUninitializedPropertyAccessException("binding");
-            activityLoadAllDataBinding3 = null;
-        }
-        activityLoadAllDataBinding3.tvVideosSize.setText(this.mVideosList.size() + " | " + MUtils.INSTANCE.size(this.mVideosSize));
-        ActivityLoadAllDataBinding activityLoadAllDataBinding4 = this.binding;
-        if (activityLoadAllDataBinding4 == null) {
-            Intrinsics.throwUninitializedPropertyAccessException("binding");
-            activityLoadAllDataBinding4 = null;
-        }
-        activityLoadAllDataBinding4.tvMusicSize.setText(this.mMusicList.size() + " | " + MUtils.INSTANCE.size(this.mMusicsSize));
-        ActivityLoadAllDataBinding activityLoadAllDataBinding5 = this.binding;
-        if (activityLoadAllDataBinding5 == null) {
-            Intrinsics.throwUninitializedPropertyAccessException("binding");
-            activityLoadAllDataBinding5 = null;
-        }
-        activityLoadAllDataBinding5.tvFilesSize.setText(this.mOtherFilesList.size() + " | " + MUtils.INSTANCE.size(this.mFilesSize));
-        ActivityLoadAllDataBinding activityLoadAllDataBinding6 = this.binding;
-        if (activityLoadAllDataBinding6 == null) {
-            Intrinsics.throwUninitializedPropertyAccessException("binding");
-            activityLoadAllDataBinding6 = null;
-        }
-        activityLoadAllDataBinding6.tvAppsSize.setText(this.mAppsList.size() + " | " + MUtils.INSTANCE.size(this.mAppsSize));
-        ActivityLoadAllDataBinding activityLoadAllDataBinding7 = this.binding;
-        if (activityLoadAllDataBinding7 == null) {
-            Intrinsics.throwUninitializedPropertyAccessException("binding");
-            activityLoadAllDataBinding7 = null;
-        }
-        activityLoadAllDataBinding7.tvTotalSize.setText("Selected\n" + MUtils.INSTANCE.size(this.allDataSize));
-        ActivityLoadAllDataBinding activityLoadAllDataBinding8 = this.binding;
-        if (activityLoadAllDataBinding8 == null) {
-            Intrinsics.throwUninitializedPropertyAccessException("binding");
-        } else {
-            activityLoadAllDataBinding = activityLoadAllDataBinding8;
-        }
-        activityLoadAllDataBinding.tvContactsSize.setText(this.mContactList.size() + " contacts");
     }
 }

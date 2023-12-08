@@ -24,15 +24,6 @@ public final class MConstants {
         reservationOfHotspot = localOnlyHotspotReservation;
     }
 
-//    public final ArrayList<DataTransferModel> getMListToSend() {
-//        return mListToSend;
-//    }
-
-//    public final void setMListToSend(ArrayList<DataTransferModel> arrayList) {
-//        Intrinsics.checkNotNullParameter(arrayList, "<set-?>");
-//        mListToSend = arrayList;
-//    }
-
     public final String[] getAllPermissionsList() {
         return allPermissionsList;
     }

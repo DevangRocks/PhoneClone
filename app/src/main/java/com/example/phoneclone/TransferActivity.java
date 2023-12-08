@@ -7,6 +7,7 @@ import androidx.appcompat.widget.Toolbar;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+
 import com.example.phoneclone.transfer.TransferService;
 import com.example.phoneclone.util.Permissions;
 import com.example.phoneclone.util.Settings;
@@ -16,6 +17,25 @@ public class TransferActivity extends AppCompatActivity {
     private static final int INTRO_REQUEST = 1;
 
     private Settings mSettings;
+
+    private void finishInit() {
+        Log.i(TAG, "finishing initialization of activity");
+
+        // Setup the action bar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        String deviceName = mSettings.getString(Settings.Key.DEVICE_NAME);
+        toolbar.setTitle(deviceName);
+        TransferService.startStopService(this, mSettings.getBoolean(Settings.Key.BEHAVIOR_RECEIVE));
+
+        TransferFragment mainFragment = new TransferFragment();
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.list_container, mainFragment)
+                .commit();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,24 +53,6 @@ public class TransferActivity extends AppCompatActivity {
         } else {
             finishInit();
         }
-    }
-
-    private void finishInit() {
-        Log.i(TAG, "finishing initialization of activity");
-
-        // Setup the action bar
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        String deviceName = mSettings.getString(Settings.Key.DEVICE_NAME);
-
-        TransferService.startStopService(this, mSettings.getBoolean(Settings.Key.BEHAVIOR_RECEIVE));
-
-        // Add the transfer fragment
-        TransferFragment mainFragment = new TransferFragment();
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.list_container, mainFragment)
-                .commit();
     }
 
     @Override

@@ -76,4 +76,7 @@ dependencies {
     implementation ("com.google.code.gson:gson:2.8.2")
     implementation("com.opencsv:opencsv:4.1")
 
+    //lottie Animation
+    implementation ("com.airbnb.android:lottie:6.1.0")
+
 }

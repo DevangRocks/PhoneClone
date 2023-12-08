@@ -61,7 +61,6 @@ public final class AppsInfocus {
     }
 
     public final AppsInfocus copy(String str, String str2, long j, String str3, boolean z, String str4) {
-//        Intrinsics.checkNotNullParameter(str, AppMeasurementSdk.ConditionalUserProperty.NAME);
         Intrinsics.checkNotNullParameter(str2, "packageName");
         Intrinsics.checkNotNullParameter(str3, "appPath");
         String str5 = str4;
@@ -94,7 +93,6 @@ public final class AppsInfocus {
     }
 
     public AppsInfocus(String str, String str2, long j, String str3, boolean z, String str4) {
-//        Intrinsics.checkNotNullParameter(str, AppMeasurementSdk.ConditionalUserProperty.NAME);
         Intrinsics.checkNotNullParameter(str2, "packageName");
         Intrinsics.checkNotNullParameter(str3, "appPath");
         Intrinsics.checkNotNullParameter(str4, "lastModified");
