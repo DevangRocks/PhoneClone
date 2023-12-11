@@ -53,6 +53,8 @@ class TransferNotificationManager {
         mNotificationManager = (NotificationManager) mService.getSystemService(
                 Service.NOTIFICATION_SERVICE);
 
+        Log.d("ServiceOnsdsdsds:",""+mService);
+
         // Android O requires the notification channels to be created
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createChannel(SERVICE_CHANNEL_ID, R.string.channel_service_name,
@@ -167,6 +169,8 @@ class TransferNotificationManager {
     synchronized void addTransfer(TransferStatus transferStatus) {
         mNumTransfers++;
         updateNotification();
+
+
 
         // Clear any existing notification (this shouldn't be necessary, but it is :P)
         removeNotification(transferStatus.getId());

@@ -82,6 +82,8 @@ public class TransferManager {
             }
         });
 
+
+
         // Add a listener for items being received
         transfer.addItemReceivedListener(new Transfer.ItemReceivedListener() {
             @Override

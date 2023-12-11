@@ -33,7 +33,24 @@ import java.util.Stack;
  */
 public class TransferService extends Service {
 
-    public static final String ACTION_BROADCAST = ".BROADCAST";
+
+    private static final String TAG = "TransferService";
+
+    public static final String ACTION_START_LISTENING = "net.nitroshare.android.START_LISTENING";
+    public static final String ACTION_STOP_LISTENING = "net.nitroshare.android.STOP_LISTENING";
+
+    public static final String ACTION_START_TRANSFER = "net.nitroshare.android.START_TRANSFER";
+    public static final String EXTRA_DEVICE = "net.nitroshare.android.DEVICE";
+    public static final String EXTRA_URIS = "net.nitroshare.android.URLS";
+    public static final String EXTRA_ID = "net.nitroshare.android.ID";
+
+    public static final String ACTION_STOP_TRANSFER = "net.nitroshare.android.STOP_TRANSFER";
+    public static final String ACTION_REMOVE_TRANSFER = "net.nitroshare.android.REMOVE_TRANSFER";
+    public static final String EXTRA_TRANSFER = "net.nitroshare.android.TRANSFER";
+
+    public static final String ACTION_BROADCAST = "net.nitroshare.android.BROADCAST";
+
+  /*  public static final String ACTION_BROADCAST = ".BROADCAST";
     public static final String ACTION_REMOVE_TRANSFER = ".REMOVE_TRANSFER";
     public static final String ACTION_START_LISTENING = ".START_LISTENING";
     public static final String ACTION_START_TRANSFER = ".START_TRANSFER";
@@ -43,7 +60,7 @@ public class TransferService extends Service {
     public static final String EXTRA_ID = ".ID";
     public static final String EXTRA_TRANSFER = ".TRANSFER";
     public static final String EXTRA_URIS = ".URLS";
-    private static final String TAG = "TransferService";
+    private static final String TAG = "TransferService";*/
 
     /**
      * Start or stop the service
@@ -77,6 +94,8 @@ public class TransferService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        Log.d("ServiceOnsdsdsds:","");
 
         mTransferNotificationManager = new TransferNotificationManager(this);
         try {
@@ -206,7 +225,7 @@ public class TransferService extends Service {
                     }
                 }
             } else {
-                Toast.makeText(this, "Transfer", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

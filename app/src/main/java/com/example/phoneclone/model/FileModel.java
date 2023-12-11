@@ -96,8 +96,7 @@ public final class FileModel {
         this.isSelected = z;
     }
 
-    /* JADX INFO: this call moved to the top of the method (can break code semantics) */
-    public /* synthetic */ FileModel(String str, String str2, String str3, ApplicationInfo applicationInfo, boolean z, int i, DefaultConstructorMarker defaultConstructorMarker) {
+    public  FileModel(String str, String str2, String str3, ApplicationInfo applicationInfo, boolean z, int i, DefaultConstructorMarker defaultConstructorMarker) {
         this(str, str2, str3, (i & 8) != 0 ? null : applicationInfo, (i & 16) != 0 ? false : z);
     }
 

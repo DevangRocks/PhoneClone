@@ -90,12 +90,12 @@ public class ChooseConnectionActivity extends AppCompatActivity {
 
     public static final void onCreate$lambda$1$lambda$0(ChooseConnectionActivity activityChooseConnection) {
         Intrinsics.checkNotNullParameter(activityChooseConnection, "this$0");
-       // Intent intent = new Intent(activityChooseConnection, ActivityExploreNearByDevices.class);
+        Intent intent = new Intent(activityChooseConnection, ActivityExploreNearByDevices.class);
         String str = activityChooseConnection.user;
         if (str == null) {
             Intrinsics.throwUninitializedPropertyAccessException("user");
             str = null;
         }
-      //  activityChooseConnection.startActivity(intent.putExtra("user", str));
+        activityChooseConnection.startActivity(intent.putExtra("user", str));
     }
 }

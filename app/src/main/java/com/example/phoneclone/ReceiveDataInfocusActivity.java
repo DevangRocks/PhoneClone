@@ -2,6 +2,8 @@ package com.example.phoneclone;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -11,6 +13,7 @@ import android.database.DataSetObserver;
 import android.net.Uri;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,14 +25,19 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.phoneclone.CommonClass.MConstants;
 import com.example.phoneclone.discovery.Device;
 import com.example.phoneclone.transfer.TransferService;
 import com.example.phoneclone.util.Permissions;
 import com.example.phoneclone.util.Settings;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import kotlin.jvm.internal.Intrinsics;
 
 public class ReceiveDataInfocusActivity extends AppCompatActivity {
     private static final String TAG = "ShareActivity";
@@ -85,10 +93,6 @@ public class ReceiveDataInfocusActivity extends AppCompatActivity {
                 }
             });
         }
-
-        /**
-         * Listener for discovery events
-         */
         private NsdManager.DiscoveryListener mDiscoveryListener = new NsdManager.DiscoveryListener() {
             @Override
             public void onServiceFound(NsdServiceInfo serviceInfo) {
@@ -155,11 +159,6 @@ public class ReceiveDataInfocusActivity extends AppCompatActivity {
             mNsdManager.stopServiceDiscovery(mDiscoveryListener);
         }
 
-        /**
-         * Retrieve the specified device
-         * @param position device index
-         * @return device at the specified position
-         */
         Device getDevice(int position) {
             return mDevices.get(getItem(position));
         }
@@ -191,10 +190,6 @@ public class ReceiveDataInfocusActivity extends AppCompatActivity {
                // getIntent().hasExtra(Intent.EXTRA_STREAM);
     }
 
-    /**
-     * Given a SEND or SEND_MULTIPLE intent, build a list of URIs
-     * @return list of URIs
-     */
     private ArrayList<Uri> buildUriList() {
         if (getIntent().getAction().equals(Intent.ACTION_SEND_MULTIPLE)) {
             return getIntent().getParcelableArrayListExtra(Intent.EXTRA_STREAM);
@@ -205,9 +200,6 @@ public class ReceiveDataInfocusActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Finish initializing the activity
-     */
     private void finishInit() {
         mDeviceAdapter = new DeviceAdapter();
         mDeviceAdapter.registerDataSetObserver(new DataSetObserver() {
@@ -219,6 +211,7 @@ public class ReceiveDataInfocusActivity extends AppCompatActivity {
         mDeviceAdapter.start();
 
         final ArrayList<Uri> uriList = buildUriList();
+//        Log.d("uriList::", buildUriList().toString());
         final ListView listView = findViewById(R.id.selectList);
         listView.setAdapter(mDeviceAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -231,6 +224,7 @@ public class ReceiveDataInfocusActivity extends AppCompatActivity {
                 startTransfer.putExtra(TransferService.EXTRA_DEVICE, device);
                 startTransfer.putParcelableArrayListExtra(TransferService.EXTRA_URIS, uriList);
                 startService(startTransfer);
+                Log.d("URLCheck:",""+uriList);
 
                 // Close the activity
                 ReceiveDataInfocusActivity.this.setResult(RESULT_OK);
@@ -248,14 +242,19 @@ public class ReceiveDataInfocusActivity extends AppCompatActivity {
         if (isValidIntent()) {
 
             // Attempt to obtain permission if it is somehow missing
-            if (Permissions.haveStoragePermission(this)) {
-                finishInit();
-            } else {
-                Permissions.requestStoragePermission(this);
-            }
+           if (checkIfPermissionsGranted()) {
+               finishInit();
+           } else {
+               Intent intent = new Intent("android.settings.MANAGE_APP_ALL_FILES_ACCESS_PERMISSION");
+               intent.addCategory("android.intent.category.DEFAULT");
+               String format = String.format("package:%s", Arrays.copyOf(new Object[]{getPackageName()}, 1));
+               Intrinsics.checkNotNullExpressionValue(format, "format(format, *args)");
+               intent.setData(Uri.parse(format));
+               startActivityForResult(intent, 2000);
+           }
         } else {
             new AlertDialog.Builder(this)
-                    .setMessage("Share")
+                    .setMessage("App cannot send the data it has received from a third-party application.")
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int id) {
@@ -267,13 +266,36 @@ public class ReceiveDataInfocusActivity extends AppCompatActivity {
         }
     }
 
+    private final boolean checkIfPermissionsGranted() {
+        ArrayList arrayList = new ArrayList();
+        if (Build.VERSION.SDK_INT >= 33) {
+            for (String str : MConstants.INSTANCE.getAllPermissionsList33()) {
+                if (ContextCompat.checkSelfPermission(this, str) != 0) {
+                    arrayList.add(str);
+                }
+            }
+        } else {
+            for (String str2 : MConstants.INSTANCE.getAllPermissionsList()) {
+                if (ContextCompat.checkSelfPermission(this, str2) != 0) {
+                    arrayList.add(str2);
+                }
+            }
+        }
+        Collection collection = arrayList;
+        if (!(!collection.isEmpty())) {
+            return true;
+        }
+        ActivityCompat.requestPermissions(this, (String[]) collection.toArray(new String[0]), MConstants.PERMISSION_REQUEST_CODE);
+        return false;
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         if (Permissions.obtainedStoragePermission(requestCode, grantResults)) {
             finishInit();
         } else {
             new AlertDialog.Builder(this)
-                    .setMessage("Share")
+                    .setMessage("App cannot transfer data without permission to access storage.")
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             dialog.dismiss();

@@ -1,8 +1,13 @@
 package com.example.phoneclone;
 
+import static android.Manifest.permission.POST_NOTIFICATIONS;
+
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -38,6 +43,11 @@ public class MainActivity extends AppCompatActivity {
                 MainActivity.OldPhoneData(MainActivity.this, view);
             }
         });
+
+        if (ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(this, new String[]{POST_NOTIFICATIONS}, 1);
+        }
+
 
         getStorage();
     }

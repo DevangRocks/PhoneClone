@@ -1,12 +1,10 @@
 package com.example.phoneclone;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.GridLayoutManager;
 
-import android.app.AlertDialog;
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
@@ -20,26 +18,22 @@ import android.os.Parcelable;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.View;
 import android.widget.CompoundButton;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.example.phoneclone.CommonClass.MConstants;
 import com.example.phoneclone.databinding.ActivityLoadAllDataBinding;
 import com.example.phoneclone.model.ContactModel;
 import com.example.phoneclone.model.FileModel;
-import com.example.phoneclone.transfer.TransferService;
 import com.example.phoneclone.util.MUtils;
-import com.example.phoneclone.util.Settings;
-import com.google.android.material.internal.ParcelableSparseArray;
 
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import dmax.dialog.SpotsDialog;
@@ -58,8 +52,6 @@ public class LoadAllDataActivity extends AppCompatActivity {
     public long mImagesSize;
     public ArrayList<FileModel> mVideosList = new ArrayList<>();
     public Parcelable buildUriList ;
-    public ArrayList<Parcelable>  arr = new ArrayList<>();
-    public ArrayList<Parcelable>  arr1 = new ArrayList<>();
     public long mVideosSize;
     Uri parcelableUri;
 
@@ -72,11 +64,11 @@ public class LoadAllDataActivity extends AppCompatActivity {
     public ArrayList<ContactModel> mContactList = new ArrayList<>();
     private static final int SHARE_REQUEST = 1;
     private final String[] projection = {"contact_id", "display_name", "data1"};
-    private Settings mSettings;
-    LinearLayout progress_layout;
     ProgressDialog pDialog;
     static boolean process_successfully = false;
     GetStatusTask get_word_taskimg;
+    ArrayList<Uri> uriList = new ArrayList<>();
+    private SparseArray<File> mChecked = new SparseArray<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,10 +97,10 @@ public class LoadAllDataActivity extends AppCompatActivity {
             public final void onClick(View view) {
                 Intent shareIntent = new Intent(LoadAllDataActivity.this, ReceiveDataInfocusActivity.class);
                 shareIntent.setAction("android.intent.action.SEND_MULTIPLE");
-                shareIntent.putExtra(Intent.EXTRA_STREAM, parcelableUri);
-                LoadAllDataActivity.this.startActivityForResult(shareIntent, SHARE_REQUEST);
+                shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uriList);
+                startActivityForResult(shareIntent, SHARE_REQUEST);
 
-                Log.d("parcableUri", parcelableUri.toString());
+                Log.d("parcableUri", uriList.toString());
 
             }
         });
@@ -150,8 +142,7 @@ public class LoadAllDataActivity extends AppCompatActivity {
             loadFiles();
             loadMusic();
             loadVideos();
-            //loadPictures();
-           getContactList();
+            getContactList();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -206,7 +197,7 @@ public class LoadAllDataActivity extends AppCompatActivity {
                         Intrinsics.checkNotNullExpressionValue(string2, "cursor.getString(numberIndex)");
                         String replaceDefault = replace(string2, " ", "", false, 4, (Object) null);
                         if (!hashSet.contains(replaceDefault)) {
-                             replaceDefault = replace(replace(replace(replaceDefault, " ", "", false, 4, (Object) null), "*", "", false, 4, (Object) null), "-", "", false, 4, (Object) null);
+                            replaceDefault = replace(replace(replace(replaceDefault, " ", "", false, 4, (Object) null), "*", "", false, 4, (Object) null), "-", "", false, 4, (Object) null);
                             File csvFile = getCsvFile(replaceDefault);
                             if (csvFile == null) {
                                 csvFile = createCsvFile(replaceDefault);
@@ -217,10 +208,10 @@ public class LoadAllDataActivity extends AppCompatActivity {
                     }
                     updateUI();
                     Unit unit = Unit.INSTANCE;
-                   closeFinally(closeable, (Throwable) null);
+                    closeFinally(closeable, (Throwable) null);
                 } catch (Throwable th2) {
                     Throwable th3 = th2;
-                   closeFinally(closeable, th3);
+                    closeFinally(closeable, th3);
                     //throw th3;
                 }
             } catch (Exception unused) {
@@ -346,7 +337,6 @@ public class LoadAllDataActivity extends AppCompatActivity {
 
     public final void loadPictures() {
         Uri uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        Intrinsics.checkNotNullExpressionValue(uri, "EXTERNAL_CONTENT_URI");
         Cursor query = getContentResolver().query(uri, new String[]{"_id", "_display_name", "_data", "_size"}, (String) null, (String[]) null, (String) null);
         if (query != null) {
             while (query.moveToNext()) {
@@ -355,23 +345,12 @@ public class LoadAllDataActivity extends AppCompatActivity {
                 String string3 = query.getString(query.getColumnIndexOrThrow("_size"));
                 if (!(string == null || string2 == null || string3 == null)) {
                     this.mPicturesList.add(new FileModel(string, string2, "Images", (ApplicationInfo) null, false, 24, (DefaultConstructorMarker) null));
-                    this.buildUriList = Uri.parse(string2);
-                    this.arr.add(buildUriList);
-
-                    ParcelableArrayList<String> parcelableList = new ParcelableArrayList<>(mPicturesList);
-
-                    Uri.Builder builder = new Uri.Builder();
-                    builder.scheme("content") // Change to your desired scheme
-                            .authority("com.example.phoneclone") // Change to your authority
-                            .appendQueryParameter("dataList", parcelableList.toString()); // Add Parcelable as a query parameter
-
-                        parcelableUri = builder.build();
-                    Log.d("URI:", parcelableUri.toString());
-
-                    String dataListString = parcelableUri.getQueryParameter("dataList");
-                    //
-                    // ParcelableArrayList<String> retrievedList = ParcelableArrayList.(dataListString);
-
+//                    for (FileModel item: mPicturesList) {
+//                        Uri mUri = Uri.parse(String.valueOf(item));
+//                        uriList.add(mUri);
+//
+//                        Log.d("uriList:", uriList.toString());
+//                    }
                     try {
                         long length = new File(string2).length();
                         if (length > 0) {
@@ -384,7 +363,7 @@ public class LoadAllDataActivity extends AppCompatActivity {
             }
             query.close();
             process_successfully = true;
-           /* updateUI();*/
+            /* updateUI();*/
 
         } else {
             process_successfully = false;
@@ -409,17 +388,8 @@ public class LoadAllDataActivity extends AppCompatActivity {
                 String string3 = query.getString(query.getColumnIndexOrThrow("_size"));
                 if (!(string == null || string2 == null || string3 == null)) {
                     this.mVideosList.add(new FileModel(string, string2, "Videos", (ApplicationInfo) null, false, 24, (DefaultConstructorMarker) null));
-//                    this.buildUriList = Uri.parse(string2);
-//                    this.arr.add(buildUriList);
                     ParcelableArrayList<String> parcelableList = new ParcelableArrayList<>(mPicturesList);
 
-                    Uri.Builder builder = new Uri.Builder();
-                    builder.scheme("content") // Change to your desired scheme
-                            .authority("com.example.phoneclone") // Change to your authority
-                            .appendQueryParameter("dataList", parcelableList.toString()); // Add Parcelable as a query parameter
-
-                    parcelableUri = builder.build();
-                    Log.d("pURI:", parcelableUri.toString());
                     try {
                         long length = new File(string2).length();
                         if (length > 0) {
@@ -447,8 +417,14 @@ public class LoadAllDataActivity extends AppCompatActivity {
                 String string3 = query.getString(query.getColumnIndexOrThrow("_size"));
                 if (!(string == null || string2 == null || string3 == null)) {
                     this.mMusicList.add(new FileModel(string, string2, "Music", (ApplicationInfo) null, false, 24, (DefaultConstructorMarker) null));
-//                    this.buildUriList = Uri.parse(string2);
-//                    this.arr.add(buildUriList);
+
+//                    for (FileModel item: this.mMusicList) {
+//                        Uri mUri = Uri.parse(String.valueOf(item));
+//                        uriList.add(mUri);
+//
+//                        Log.d("uriList:", uriList.toString());
+//                    }
+
                     try {
                         long length = new File(string2).length();
                         if (length > 0) {
@@ -463,6 +439,7 @@ public class LoadAllDataActivity extends AppCompatActivity {
             updateUI();
         }
     }
+
     public final void loadFiles() {
         Uri contentUri = MediaStore.Files.getContentUri("external");
         Intrinsics.checkNotNullExpressionValue(contentUri, "getContentUri(\"external\")");
@@ -476,8 +453,13 @@ public class LoadAllDataActivity extends AppCompatActivity {
                     if (!(string == null || string2 == null || string3 == null)) {
                         if (endsWith$default(string, ".pdf", false, 2, (Object) null) || endsWith$default(string, ".txt", false, 2, (Object) null) || endsWith$default(string, ".docx", false, 2, (Object) null) || endsWith$default(string, ".xlsx", false, 2, (Object) null)) {
                             this.mOtherFilesList.add(new FileModel(string, string2, "Apps", (ApplicationInfo) null, false, 24, (DefaultConstructorMarker) null));
-    //                        this.buildUriList = Uri.parse(string2);
-    //                        this.arr.add(buildUriList);
+//                            for (FileModel item: mOtherFilesList) {
+//                                Uri mUri = Uri.parse(String.valueOf(item));
+//                                uriList.add(mUri);
+//
+//                                Log.d("uriList:", uriList.toString());
+//                            }
+
                             try {
                                 long length = new File(string2).length();
                                 if (length > 0) {
@@ -520,13 +502,19 @@ public class LoadAllDataActivity extends AppCompatActivity {
                     String path = appFile.getPath();
                     Intrinsics.checkNotNullExpressionValue(path, "apkFile.path");
 
+
                     FileModel r8 = null;
                     FileModel fileModel = r8;
                     FileModel fileModel2 = new FileModel(obj, path, "Apps", (ApplicationInfo) null, false, 24, (DefaultConstructorMarker) null);
                     arrayList.add(fileModel2);
-                    //this.buildUriList = mAppsList;
-//                    this.buildUriList = Uri.parse(str);
-//                    this.arr.add(buildUriList);
+
+                    for (FileModel item: arrayList) {
+                        Uri mUri = Uri.parse(String.valueOf(item));
+                        uriList.add(mUri);
+
+                        Log.d("uriList:", uriList.toString());
+                    }
+
                     if (length > 0) {
                         this.mAppsSize += length;
                         this.allDataSize += length;
@@ -538,6 +526,7 @@ public class LoadAllDataActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     public final void updateUI() {
 
         binding.tvImagesSize.setText(this.mPicturesList.size() + " | " + MUtils.INSTANCE.size(this.mImagesSize));
